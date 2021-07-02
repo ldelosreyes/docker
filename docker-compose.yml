@@ -1,0 +1,75 @@
+version: '3'
+services:
+  #PHP Service
+  php:
+    build: 
+      context: ./php
+    container_name: php
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: php
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ../:/var/www:z
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini:z
+    networks:
+      - local_network
+    user: '1000'
+
+  #Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ../:/var/www:z
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:z
+      - ./logs/nginx/:/var/log/nginx
+    networks:
+      - local_network
+
+  #MySQL Service
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      # MYSQL_DATABASE: docker
+      MYSQL_ROOT_PASSWORD: root
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./mysql/my.cnf:/etc/mysql/my.cnf:z
+    networks:
+      - local_network
+
+  #NODE
+  # node:
+  #   image: node:latest
+  #   container_name: node
+  #   restart: unless-stopped
+  #   tty: true
+  #   working_dir: /var/www
+  #   volumes:
+  #     - ../:/var/www:z
+  #   networks:
+  #     - local_network
+
+#Docker Networks
+networks:
+  local_network:
+
+volumes:
+  dbdata:
+    driver: local
