@@ -28,3 +28,5 @@ RUN groupadd -g 1002 pdf-writers && \
     addgroup root pdf-writers && \
     newgrp pdf-writers && \
     usermod -a -G pdf-writers www-data
+
+RUN chown -R www-data:www-data /tmp
